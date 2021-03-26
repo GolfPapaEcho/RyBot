@@ -3,15 +3,28 @@ const int eyesLEDS = 8;
 const int redLED = 9;
 const int greenLED = 10;
 const int blueLED = 11;
+const int paintBrushSwitchCheckInterval = 300;
+const int blinkDuration = 500;
+
 int wait = 250;
 int ledState = HIGH;
 int switchState;
 int lastSwitchState = LOW;
 
+unsigned long messageCount;
+unsigned long paintBrushCount;
+unsigned long currentMillis;
+
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
-//Set up Morse Code look up table (My first jagged arrays!)
+byte eyesLEDsState = LOW;             // used to record whether the LEDs are on or off
+byte redLEDState = LOW;           //   LOW = off
+byte greenLEDState = LOW;
+byte blueLEDState = LOW;
+byte buttonLed_State = LOW;
+
+//Set up Morse Code look up table 
 //First int in each Morse character array is the number of elements in the array starting counting at zero.
 const int a[3] = { 2, 1, 3 };
 const int b[5] = { 4, 3, 1, 1, 1 };
@@ -98,6 +111,22 @@ void setup() {
 }
 
 void loop() {
+
+
+      // Notice that none of the action happens in loop() apart from reading millis()
+      //   it just calls the functions that have the action code
+
+  currentMillis = millis();   // capture the latest value of millis()
+                              //   this is equivalent to noting the time from a clock
+                              //   use the same time for all LED flashes to keep them synchronized
+  
+  readButton();               // call the functions that do the work
+  updateEyesLEDState();
+  updateRedLEDState();
+  updateGreenLEDState();
+  updateBLueLEDState();
+  switchLeds();
+  
 
 //my circuit uses positive logic
 sendMessageRyBot();
