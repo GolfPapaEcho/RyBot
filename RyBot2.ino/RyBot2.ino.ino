@@ -99,8 +99,10 @@ const int eight[6] = { 5, 3, 3, 3, 1, 1 };
 const int nine[6] = { 5, 3, 3, 3, 3, 1 };
 const int zero[6] = { 5, 3, 3, 3, 3, 3 };
 
-//messages (RyBot for EYE_LEDS and buzzer and uncle for HAND_LED and buzzer)
-int const* RyBot[19] = { r, y, b, o, t, space, space, space, s, c, o, t, l, a, n, d, space, space, space }; //Eye leds gpio pin 07
+//messages (RyBot for EYE_LEDS and buzzer)
+#define MESSAGE_LENGTH 19
+#define MAX_CHAR_LEN 5
+int const* RyBot[MESSAGE_LENGTH] = { r, y, b, o, t, space, space, space, s, c, o, t, l, a, n, d, space, space, space }; //Eye leds gpio pin 07
 
 int noElementsInCharacter;
 int timerUnitMultiplier;
@@ -290,7 +292,7 @@ void readButton() {
 void sendMessageRyBot() {
 
   int characterInMessage = 0; //array counting starts at zero
-  int noCharactersInMessage = 19;  //Set for RyBot message array (this has 10 characters)
+  int noCharactersInMessage = 19;  //Set for RyBot message array (this has 19 characters)
   for (characterInMessage; characterInMessage < noCharactersInMessage; // array element are numbered from zero
       characterInMessage++) {
 
@@ -316,7 +318,55 @@ void sendMessageRyBot() {
 
 }
 
-  
+//========================================  
+unsigned short* buildMessageRyBot() {
+
+  unsigned short message[MESSAGE_LENGTH][2*MAX_CHAR_LEN];
+//r[4] = { 3, 1, 3, 1 };
+//message[0] = 0 
+//on  = 0     = now
+//now = now + R[1]
+//off = 1     = now 
+//now = now + 1
+//on  = 2 waiting for a di = now
+//now = now + R[2]
+//off = 5 = now
+//on  = 6 = now = now + 1
+//off = 7 = now = now + R[3]
+//if i > noElementsInCharacter
+//message[characterInMessage][i] = 0;
+//how it works
+//
+
+  int characterInMessage = 0; //array counting starts at zero
+  unsigned short now = 1;
+  for (characterInMessage; characterInMessage < MESSAGE_LENGTH; // array element are numbered from zero
+      characterInMessage++) {
+
+    int noElementsInCharacter = RyBot[characterInMessage][0];
+    if (RyBot[characterInMessage] == space) {
+      /* Turn LED Off by setting the GPIO pin low  */
+      
+      for(int i = 0; i < 2*MAX_CHAR_LEN; i++){
+        message[characterInMessage][i] = 0;
+      }
+      now = now + space[1];
+    } else {
+      int i = 1; //first di or dah is at array[1] position
+      for (i; i <= noElementsInCharacter; i++) {
+        timerUnitMultiplier = RyBot[characterInMessage][i];
+        /* Turn LED On by setting the GPIO pin high*/
+        digitalWrite(eyesLEDS, HIGH);
+        delay((timerUnitMultiplier * 100));
+        /* Turn LED Off by setting the GPIO pin low */
+        digitalWrite(eyesLEDS, LOW);
+        delay(100);
+      }
+    }
+    delay(300); //new character delay
+  }
+
+}
 
 
 //========================================END
