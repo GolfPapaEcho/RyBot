@@ -126,12 +126,63 @@ unsigned long previousLed_BLUE_Millis = 0;
 unsigned long previousButtonMillis = 0; // time when button press last checked
 
 // For message play back
-unsigned short msgTiming[][];    // to get filled with the on off timing
+unsigned short msgTiming[MESSAGE_LENGTH][2*MAX_CHAR_LEN];    // to get filled with the on off timing
 unsigned int msgCurrentChar = 0;  // which char in the message we are up to
 unsigned long msgStartMillis = 0; // ms start time (for getting offset)
 bool msgPlaying = true;          // should we be playing the message?
 unsigned long msgDitMillis = 100; // Number of ms to represent a dit (dot) - the base of the morse time
 bool isMorseLedOn = false;  // the state of the morse LED
+
+
+void buildMessageRyBot() {  
+    //r[4] = { 3, 1, 3, 1 };
+    //message[0] = 0
+    //on  = 0     = now
+    //now = now + R[1]
+    //off = 1     = now
+    //now = now + 1
+    //on  = 2 waiting for a di = now
+    //now = now + R[2]
+    //off = 5 = now
+    //on  = 6 = now = now + 1
+    //off = 7 = now = now + R[3]
+    //if i > noElementsInCharacter
+    //message[characterInMessage][i] = 0;
+    //how it works
+    //
+
+  int characterInMessage = 0; //array counting starts at zero
+  unsigned short now = 1;
+  for (characterInMessage; characterInMessage < MESSAGE_LENGTH; // array element are numbered from zero
+      characterInMessage++) {
+
+    int noElementsInCharacter = RyBot[characterInMessage][0];
+    if (RyBot[characterInMessage] == space) {
+      /* Turn LED Off by setting the GPIO pin low  */
+      
+      for(int i = 0; i < 2*MAX_CHAR_LEN; i++){
+        msgTiming[characterInMessage][i] = 0;
+      }
+      now = now + space[1];
+    } else {
+      for (int i = 1; i <= MAX_CHAR_LEN; i++) {
+        int on = 0;
+        int off = 0;
+        if (i <= noElementsInCharacter) {
+          on = now;
+          now = now + RyBot[characterInMessage][i];
+          off = now;
+          now = now + 1; // Adding the space between dots and dashes
+        }
+
+       msgTiming[characterInMessage][2*(i-1)] = on;
+       msgTiming[characterInMessage][2*(i-1)+1] = off;
+      }
+    }
+    now = now + 3; //new character delay
+  }
+
+}
 
 //========================================
 
@@ -149,7 +200,7 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
 
   // Build the message
-  msgTiming = buildMessageRyBot()
+  buildMessageRyBot();
  
  
 }
@@ -328,58 +379,6 @@ void sendMessageRyBot() {
 }
 
 //========================================  
-unsigned short* buildMessageRyBot() {
-
-  unsigned short message[MESSAGE_LENGTH][2*MAX_CHAR_LEN];
-    //r[4] = { 3, 1, 3, 1 };
-    //message[0] = 0
-    //on  = 0     = now
-    //now = now + R[1]
-    //off = 1     = now
-    //now = now + 1
-    //on  = 2 waiting for a di = now
-    //now = now + R[2]
-    //off = 5 = now
-    //on  = 6 = now = now + 1
-    //off = 7 = now = now + R[3]
-    //if i > noElementsInCharacter
-    //message[characterInMessage][i] = 0;
-    //how it works
-    //
-
-  int characterInMessage = 0; //array counting starts at zero
-  unsigned short now = 1;
-  for (characterInMessage; characterInMessage < MESSAGE_LENGTH; // array element are numbered from zero
-      characterInMessage++) {
-
-    int noElementsInCharacter = RyBot[characterInMessage][0];
-    if (RyBot[characterInMessage] == space) {
-      /* Turn LED Off by setting the GPIO pin low  */
-      
-      for(int i = 0; i < 2*MAX_CHAR_LEN; i++){
-        message[characterInMessage][i] = 0;
-      }
-      now = now + space[1];
-    } else {
-      for (int i = 1; i <= MAX_CHAR_LEN; i++) {
-        int on = 0
-        int off = 0
-        if (i <= noElementsInCharacter) {
-          on = now
-          now = now + RyBot[characterInMessage][i]
-          off = now
-          now = now + 1 // Adding the space between dots and dashes
-        }
-
-       message[characterInMessage][2*(i-1)] = on
-       message[characterInMessage][2*(i-1)+1] = off
-      }
-    }
-    now = now + 3 //new character delay
-  }
-
-  return message
-}
 
 // For message play back
 // unsigned short msgTiming[][];    // to get filled with the on off timing
@@ -393,7 +392,7 @@ void updateMorseMessage() {
     if(!msgPlaying) {
         // turn off morse LED
         // then return
-        return
+        return;
     }
 
     unsigned long now = currentMillis - msgStartMillis; // now in ms since last char started
@@ -402,18 +401,18 @@ void updateMorseMessage() {
     // see where we should be in the on-off cycle
     for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
-            onTime = msgTiming[msgCurrentChar][i*2]
-            offTime = msgTiming[msgCurrentChar][i*2+1]
+            unsigned short onTime = msgTiming[msgCurrentChar][i*2];
+            unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
 
             if(now > onTime*msgDitMillis) {
-                isMorseLedOn = true
+                isMorseLedOn = true;
             } else {
                 msgCurrentChar = c;
                 // setMorseLed(isMorseLedOn) // not implented yet
                 return;
             }
             if(now > offTime*msgDitMillis) {
-                isMorseLedOn = false
+                isMorseLedOn = false;
             } else {
                 msgCurrentChar = c;
                 // setMorseLed(isMorseLedOn)// not implented yet
@@ -427,8 +426,8 @@ void updateMorseMessage() {
     // so we have finished the message
 
     isMorseLedOn = false;
-    restart_delay_ms = 2000; // start again in two seconds
-    msgStartMillis = currentMillis  + restart_delay_ms
+    unsigned long restart_delay_ms = 2000; // start again in two seconds
+    msgStartMillis = currentMillis  + restart_delay_ms;
     msgCurrentChar = 0; // reset to start of message.
     // setMorseLed(isMorseLedOn) // not implented yet
 
