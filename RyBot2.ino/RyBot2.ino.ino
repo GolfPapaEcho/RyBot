@@ -188,7 +188,7 @@ void buildMessageRyBot() {
 
 void setup() {
 
-  
+  Serial.begin(9600);
       // set the Led pins as output:
   pinMode(onBoardLedPin, OUTPUT);
   pinMode(led_RED_Pin, OUTPUT);
@@ -233,7 +233,7 @@ void loop() {
 //========================================
 
 void updateOnBoardLedState() {
-
+  Serial.print("reached on board led state\n");
   if (onBoardLedState == LOW) {
           // if the Led is off, we must wait for the interval to expire before turning it on
     if (currentMillis - previousOnBoardLedMillis >= onBoardLedInterval) {
@@ -346,38 +346,6 @@ void readButton() {
   }
 
 }
-
-//========================================
-
-void sendMessageRyBot() {
-
-  int characterInMessage = 0; //array counting starts at zero
-  int noCharactersInMessage = 19;  //Set for RyBot message array (this has 19 characters)
-  for (characterInMessage; characterInMessage < noCharactersInMessage; // array element are numbered from zero
-      characterInMessage++) {
-
-    int noElementsInCharacter = RyBot[characterInMessage][0];
-    if (RyBot[characterInMessage] == space) {
-      /* Turn LED Off by setting the GPIO pin low  */
-      digitalWrite(eyesLEDS, LOW);
-      delay(space[1] * 100);
-    } else {
-      int i = 1; //first di or dah is at array[1] position
-      for (i; i <= noElementsInCharacter; i++) {
-        timerUnitMultiplier = RyBot[characterInMessage][i];
-        /* Turn LED On by setting the GPIO pin high*/
-        digitalWrite(eyesLEDS, HIGH);
-        delay((timerUnitMultiplier * 100));
-        /* Turn LED Off by setting the GPIO pin low */
-        digitalWrite(eyesLEDS, LOW);
-        delay(100);
-      }
-    }
-    delay(300); //new character delay
-  }
-
-}
-
 //========================================  
 
 // For message play back
@@ -391,6 +359,7 @@ void sendMessageRyBot() {
 void updateMorseMessage() {
     if(!msgPlaying) {
         // turn off morse LED
+        digitalWrite(eyesLEDS, LOW);
         // then return
         return;
     }
@@ -403,19 +372,20 @@ void updateMorseMessage() {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
             unsigned short onTime = msgTiming[msgCurrentChar][i*2];
             unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
-
+            Serial.print("reached message update\n");
             if(now > onTime*msgDitMillis) {
                 isMorseLedOn = true;
             } else {
                 msgCurrentChar = c;
-                // setMorseLed(isMorseLedOn) // not implented yet
+                digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn) // not implented yet
+                Serial.print("Eyes On\n");
                 return;
             }
             if(now > offTime*msgDitMillis) {
                 isMorseLedOn = false;
             } else {
                 msgCurrentChar = c;
-                // setMorseLed(isMorseLedOn)// not implented yet
+                digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn)// not implented yet
                 return;
             }
         }
@@ -429,7 +399,7 @@ void updateMorseMessage() {
     unsigned long restart_delay_ms = 2000; // start again in two seconds
     msgStartMillis = currentMillis  + restart_delay_ms;
     msgCurrentChar = 0; // reset to start of message.
-    // setMorseLed(isMorseLedOn) // not implented yet
+    digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn) // not implented yet
 
 
 
