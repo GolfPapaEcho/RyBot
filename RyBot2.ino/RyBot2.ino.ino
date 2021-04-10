@@ -53,7 +53,7 @@ const int buttonPin = 7; // the pin number for the button
 const int onBoardLedInterval = 500; // number of millisecs between blinks
 const int led_RED_Interval = 500;
 const int led_GREEN_Interval = 750;
-const int led_BLUE_Interval = 1000;
+const int led_BLUE_Interval = 100;
 
 const int blinkDuration = 500; // number of millisecs that Led's are on - all three leds use this
 
@@ -130,7 +130,7 @@ unsigned short msgTiming[MESSAGE_LENGTH][2*MAX_CHAR_LEN];    // to get filled wi
 unsigned int msgCurrentChar = 0;  // which char in the message we are up to
 unsigned long msgStartMillis = 0; // ms start time (for getting offset)
 bool msgPlaying = true;          // should we be playing the message?
-unsigned long msgDitMillis = 100; // Number of ms to represent a dit (dot) - the base of the morse time
+unsigned long msgDitMillis = 1000; // Number of ms to represent a dit (dot) - the base of the morse time
 bool isMorseLedOn = false;  // the state of the morse LED
 
 
@@ -188,7 +188,7 @@ void buildMessageRyBot() {
 
 void setup() {
 
-  Serial.begin(9600);
+  
       // set the Led pins as output:
   pinMode(onBoardLedPin, OUTPUT);
   pinMode(led_RED_Pin, OUTPUT);
@@ -216,9 +216,9 @@ void loop() {
                               //   this is equivalent to noting the time from a clock
                               //   use the same time for all LED flashes to keep them synchronized
   
-  readButton();               // call the functions that do the work
+ readButton();               // call the functions that do the work
   //my circuit uses positive logic
-  // sendMessageRyBot();
+
   updateMorseMessage();
   updateOnBoardLedState();
 
@@ -233,7 +233,6 @@ void loop() {
 //========================================
 
 void updateOnBoardLedState() {
-  Serial.print("reached on board led state\n");
   if (onBoardLedState == LOW) {
           // if the Led is off, we must wait for the interval to expire before turning it on
     if (currentMillis - previousOnBoardLedMillis >= onBoardLedInterval) {
@@ -362,30 +361,37 @@ void updateMorseMessage() {
         digitalWrite(eyesLEDS, LOW);
         // then return
         return;
+
     }
-
+if(msgStartMillis > currentMillis){
+  return;}
     unsigned long now = currentMillis - msgStartMillis; // now in ms since last char started
-
-
+//if(currentMillis){}
+//if(now/1000 <  1){
+//  digitalWrite(eyesLEDS, HIGH);
+//  return;
+//}
+//if(now/1000 < 2){
+//  digitalWrite(eyesLEDS, LOW);
+//  return;
+//}
     // see where we should be in the on-off cycle
     for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
             unsigned short onTime = msgTiming[msgCurrentChar][i*2];
             unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
-            Serial.print("reached message update\n");
             if(now > onTime*msgDitMillis) {
                 isMorseLedOn = true;
             } else {
                 msgCurrentChar = c;
-                digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn) // not implented yet
-                Serial.print("Eyes On\n");
+                digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn)
                 return;
             }
             if(now > offTime*msgDitMillis) {
                 isMorseLedOn = false;
             } else {
                 msgCurrentChar = c;
-                digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn)// not implented yet
+                digitalWrite(eyesLEDS, isMorseLedOn);// setMorseLed(isMorseLedOn)
                 return;
             }
         }
