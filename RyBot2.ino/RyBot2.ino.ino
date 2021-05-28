@@ -130,7 +130,7 @@ unsigned short msgTiming[MESSAGE_LENGTH][2*MAX_CHAR_LEN];    // to get filled wi
 unsigned int msgCurrentChar = 0;  // which char in the message we are up to
 unsigned long msgStartMillis = 0; // ms start time (for getting offset)
 bool msgPlaying = true;          // should we be playing the message?
-unsigned long msgDitMillis = 1000; // Number of ms to represent a dit (dot) - the base of the morse time
+unsigned long msgDitMillis = 333; // Number of ms to represent a dit (dot) - the base of the morse time
 bool isMorseLedOn = false;  // the state of the morse LED
 
 
