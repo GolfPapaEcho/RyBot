@@ -194,7 +194,7 @@ void debug_print_message(void) {
             Serial.print(i);
             Serial.print(onTime);
             Serial.print(offTime);
-            Serial.println("\n");
+            Serial.print("\n");
         }
     }
 }
