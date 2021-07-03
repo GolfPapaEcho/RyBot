@@ -184,6 +184,17 @@ void buildMessageRyBot() {
 
 }
 
+void debug_print_message(void) {
+    Serial.println("c,i,onTime,offTime");
+    for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
+        for(int i = 0; i < MAX_CHAR_LEN; i++) {
+            unsigned short onTime = msgTiming[msgCurrentChar][i*2];
+            unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
+            Serial.println("%d, %d, %d, %d", c, i, onTime, offTime);
+        }
+    }
+}
+
 //========================================
 
 void setup() {
@@ -201,6 +212,7 @@ void setup() {
 
   // Build the message
   buildMessageRyBot();
+  debug_print_message();
  
  
 }
@@ -363,18 +375,19 @@ void updateMorseMessage() {
         return;
 
     }
-if(msgStartMillis > currentMillis){
-  return;}
+    if(msgStartMillis > currentMillis){
+        return;
+    }
     unsigned long now = currentMillis - msgStartMillis; // now in ms since last char started
-//if(currentMillis){}
-//if(now/1000 <  1){
-//  digitalWrite(eyesLEDS, HIGH);
-//  return;
-//}
-//if(now/1000 < 2){
-//  digitalWrite(eyesLEDS, LOW);
-//  return;
-//}
+    //if(currentMillis){}
+    //if(now/1000 <  1){
+    //  digitalWrite(eyesLEDS, HIGH);
+    //  return;
+    //}
+    //if(now/1000 < 2){
+    //  digitalWrite(eyesLEDS, LOW);
+    //  return;
+    //}
     // see where we should be in the on-off cycle
     for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
