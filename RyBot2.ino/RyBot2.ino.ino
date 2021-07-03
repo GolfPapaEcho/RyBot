@@ -188,8 +188,8 @@ void debug_print_message(void) {
     Serial.print("c,i,onTime,offTime\n");
     for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
-            unsigned short onTime = msgTiming[msgCurrentChar][i*2];
-            unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
+            unsigned short onTime = msgTiming[c][i*2];
+            unsigned short offTime = msgTiming[c][i*2+1];
             Serial.print(c);
             Serial.print(i);
             Serial.print(onTime);
@@ -395,8 +395,8 @@ void updateMorseMessage() {
     // see where we should be in the on-off cycle
     for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
-            unsigned short onTime = msgTiming[msgCurrentChar][i*2];
-            unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
+            unsigned short onTime = msgTiming[c][i*2];
+            unsigned short offTime = msgTiming[c][i*2+1];
             if(now > onTime*msgDitMillis) {
                 isMorseLedOn = true;
             } else {
