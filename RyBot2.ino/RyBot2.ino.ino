@@ -185,12 +185,16 @@ void buildMessageRyBot() {
 }
 
 void debug_print_message(void) {
-    Serial.println("c,i,onTime,offTime");
+    Serial.print("c,i,onTime,offTime\n");
     for(int c = msgCurrentChar; c < MESSAGE_LENGTH; c++) {
         for(int i = 0; i < MAX_CHAR_LEN; i++) {
             unsigned short onTime = msgTiming[msgCurrentChar][i*2];
             unsigned short offTime = msgTiming[msgCurrentChar][i*2+1];
-            Serial.println("%d, %d, %d, %d", c, i, onTime, offTime);
+            Serial.print(c);
+            Serial.print(i);
+            Serial.print(onTime);
+            Serial.print(offTime);
+            Serial.println("\n");
         }
     }
 }
